@@ -1,6 +1,7 @@
 
-# ---- ETAPA 1: Construcción ----
-# Usamos Node.js para compilar la aplicación React
+# ---- ETAPA 1: Contruir ----
+# Imagen base: usamos Node.js versión 18 (ligera con Alpine Linux)
+# Se usa el alias “build” para diferenciar la etapa en la construcción del front, ya que esta se hace en 2 etapas.
 FROM node:18-alpine AS build
 
 # Carpeta de trabajo dentro del contenedor
@@ -23,7 +24,7 @@ RUN npm run build
 # Usamos Nginx para servir los archivos estáticos generados
 FROM nginx:alpine
 
-# Copiamos los archivos del build al directorio que sirve Nginx
+# Copiamos los archivos del build al directorio que sirve Nginx (“Primera etapa”)
 COPY --from=build /app/build /usr/share/nginx/html
 
 # Exponemos el puerto 80 (puerto por defecto de Nginx)

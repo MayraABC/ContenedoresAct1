@@ -7,13 +7,13 @@ WORKDIR /app
 # 3. Copiamos primero los archivos de dependencias
 COPY package.json ./
 
-# 4. Instalamos las dependencias
+# 4. Instalamos las dependencias, las que solo sean necesarias para que la aplicación funcione
 RUN npm install --production
 
 # 5. Copiamos el resto del código fuente
 COPY . .
 
-# 6. Exponemos el puerto en el que corre tu servidor
+# 6. Exponemos el puerto en el que correrá
 EXPOSE 3001
 
 # 7. Comando para arrancar la aplicación

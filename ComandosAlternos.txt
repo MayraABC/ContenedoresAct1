@@ -1,0 +1,25 @@
+***************************************************************************************
+  
+  # 1. Primero la BD
+docker run -d --name fintech-db -p 5432:5432 primera_imagen_dockerdb
+
+# 2. Luego el backend (Sin docker compose)
+#Opción 1: 
+docker run -d --name fintech-backend -p 3001:3001 \
+  -e DB_HOST=172.31.8.58 \
+  primera_imagen_dockerback
+
+#Opción2: 
+  docker run -d \
+  --name fintech-backend-old \
+  -p 3001:3001 \
+  -e DB_HOST=13.52.243.241 \
+  -e DB_PORT=5432 \
+  -e DB_NAME=fintech_db \
+  -e DB_USER=fintech_user \
+  -e DB_PASSWORD=fintech_pass123 \
+  primera_imagen_dockerback
+
+
+# 3. Por último el frontend
+docker run -d --name fintech-frontend -p 80:80 tercera_imagen_dockerfront
