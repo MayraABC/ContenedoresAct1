@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://52.53.211.160:3001';
+const API_URL = process.env.REACT_APP_API_URL || 'http://3.101.22.173:3001';
 
 function App() {
   const [usuarios, setUsuarios] = useState([]);
