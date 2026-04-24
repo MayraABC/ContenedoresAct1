@@ -23,3 +23,5 @@ docker run -d --name fintech-backend -p 3001:3001 \
 
 # 3. Por último el frontend
 docker run -d --name fintech-frontend -p 80:80 tercera_imagen_dockerfront
+
+# 4. Cambios desde el fork
