@@ -46,9 +46,9 @@ const initDB = async (retries = 10, delay = 3000) => {
       console.log('✅ Base de datos inicializada correctamente');
       return; // Éxito, salir del loop
     } catch (error) {
-      console.warn(`⏳ Intento ${i}/${retries} fallido: ${error.message}`);
+      console.warn(` Intento ${i}/${retries} fallido: ${error.message}`);
       if (i < retries) {
-        console.log(`🔄 Reintentando en ${delay / 1000} segundos...`);
+        console.log(` Reintentando en ${delay / 1000} segundos...`);
         await new Promise(res => setTimeout(res, delay));
       } else {
         console.error('❌ No se pudo inicializar la base de datos después de todos los intentos.');

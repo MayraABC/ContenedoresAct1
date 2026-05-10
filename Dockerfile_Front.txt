@@ -1,5 +1,5 @@
 
-# ---- ETAPA 1: Contruir ----
+# ---- PASO 1: Contruir ----
 # Imagen base: usamos Node.js versión 18 (ligera con Alpine Linux)
 # Se usa el alias “build” para diferenciar la etapa en la construcción del front, ya que esta se hace en 2 etapas.
 FROM node:18-alpine AS build
@@ -20,7 +20,7 @@ COPY . .
 RUN npm run build
 
 
-# ---- ETAPA 2: Servir ----
+# ---- PASO 2: Servir ----
 # Usamos Nginx para servir los archivos estáticos generados
 FROM nginx:alpine
 
