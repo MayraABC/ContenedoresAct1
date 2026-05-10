@@ -18,37 +18,44 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD || 'fintech_pass123'
 });
 
-// 
-const initDB = async () => {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS usuarios (
-        id SERIAL PRIMARY KEY,
-        nombre VARCHAR(100) NOT NULL,
-        email VARCHAR(100) UNIQUE NOT NULL,
-        saldo DECIMAL(12, 2) DEFAULT 0.00,
-        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
+// Inicializar DB con reintentos para evitar race condition con PostgreSQL
+const initDB = async (retries = 10, delay = 3000) => {
+  for (let i = 1; i <= retries; i++) {
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS usuarios (
+          id SERIAL PRIMARY KEY,
+          nombre VARCHAR(100) NOT NULL,
+          email VARCHAR(100) UNIQUE NOT NULL,
+          saldo DECIMAL(12, 2) DEFAULT 0.00,
+          fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
 
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS transacciones (
-        id SERIAL PRIMARY KEY,
-        usuario_id INTEGER REFERENCES usuarios(id),
-        tipo VARCHAR(20) NOT NULL,
-        monto DECIMAL(12, 2) NOT NULL,
-        descripcion TEXT,
-        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS transacciones (
+          id SERIAL PRIMARY KEY,
+          usuario_id INTEGER REFERENCES usuarios(id),
+          tipo VARCHAR(20) NOT NULL,
+          monto DECIMAL(12, 2) NOT NULL,
+          descripcion TEXT,
+          fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
 
-    console.log('✅ Base de datos inicializada correctamente');
-  } catch (error) {
-    console.error('❌ Error al inicializar la base de datos:', error);
+      console.log('✅ Base de datos inicializada correctamente');
+      return; // Éxito, salir del loop
+    } catch (error) {
+      console.warn(`⏳ Intento ${i}/${retries} fallido: ${error.message}`);
+      if (i < retries) {
+        console.log(`🔄 Reintentando en ${delay / 1000} segundos...`);
+        await new Promise(res => setTimeout(res, delay));
+      } else {
+        console.error('❌ No se pudo inicializar la base de datos después de todos los intentos.');
+      }
+    }
   }
 };
-
-// 
 
 // H
 app.get('/api/health', (req, res) => {
