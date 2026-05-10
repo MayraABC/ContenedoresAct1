@@ -1,0 +1,130 @@
+Instalar Docker en la instancia
+sudo dnf install docker -y
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
+
+Instalar git
+sudo dnf install git -y
+
+Se clona el proyecto
+git clone https://github.com/MayraABC/ContenedoresAct1.git
+
+Se va a la carpeta del proyecto 
+cd ContenedoresAct1
+
+Se crea el Dockerfile de la Base de datos
+sudo nano Dockerfile
+
+# Imagen base de PostgreSQL 15.17 sobre Alpine 3.22
+FROM postgres:15.17-alpine3.22
+
+# Variables de entorno para la base de datos
+ENV POSTGRES_USER=fintech_user
+ENV POSTGRES_PASSWORD=fintech_pass123
+ENV POSTGRES_DB=fintech_db
+
+# Puerto expuesto por defecto de PostgreSQL
+EXPOSE 5432
+
+Ahora se crea la imagen para el contenedor de la BD
+sudo docker build -t contenedor-bd .
+
+Para validar las imagenes creadas ejecutamos el comando
+sudo docker images
+
+Validar cuales están en ejecución
+sudo docker ps
+
+***Creo el Dockerfile del backend
+****Voy a la carpeta del backend
+cd backend
+
+sudo nano Dockerfile
+# 1. Imagen base: usamos Node.js versión 18 (ligera con Alpine Linux)
+FROM node:18-alpine
+
+# 2. Carpeta de trabajo dentro del contenedor
+WORKDIR /app
+
+# 3. Copiamos primero los archivos de dependencias
+COPY package.json ./
+
+# 4. Instalamos las dependencias, las que solo sean necesarias para que la aplicación funcione
+RUN npm install --production
+
+# 5. Copiamos el resto del código fuente
+COPY . .
+
+# 6. Exponemos el puerto en el que correrá
+EXPOSE 3001
+
+# 7. Comando para arrancar la aplicación
+CMD ["node", "server.js"]
+
+**Ahora se crea la imagen del contendor para el backend
+sudo docker build -t contenedor-back .
+
+**Ahora vamos a la carpeta front para crear el Dockerfile
+cd frontend
+
+sudo nano Dockerfile
+
+
+# ---- ETAPA 1: Contruir ----
+# Imagen base: usamos Node.js versión 18 (ligera con Alpine Linux)
+# Se usa el alias “build” para diferenciar la etapa en la construcción del front, ya que esta se hace en 2 etapas.
+FROM node:18-alpine AS build
+
+# Carpeta de trabajo dentro del contenedor
+WORKDIR /app
+
+# Copiamos primero los archivos de dependencias
+COPY package.json ./
+
+# Instalamos las dependencias
+RUN npm install
+
+# Copiamos el resto del código fuente
+COPY . .
+
+# Generamos los archivos estáticos listos para producción (carpeta /build)
+RUN npm run build
+
+
+# ---- ETAPA 2: Servir ----
+# Usamos Nginx para servir los archivos estáticos generados
+FROM nginx:alpine
+
+# Copiamos los archivos del build al directorio que sirve Nginx (“Primera etapa”)
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Exponemos el puerto 80 (puerto por defecto de Nginx)
+EXPOSE 80
+
+# Nginx arranca automáticamente al iniciar el contenedor
+CMD ["nginx", "-g", "daemon off;"]
+
+***Creamos la imagen del contenedor
+sudo docker build -t contenedor-front .
+
+
+***Corremos los contenedores
+****Creamos el de la Base de datos
+sudo docker run -dp 5432:5432 contenedor-bd
+
+Creo la imagen del back, donde debo pasarle los datos de usuario y contraseña de postgres
+sudo docker run -d \
+  -p 3001:3001 \
+  -e DB_HOST=54.183.114.205 \
+  -e DB_PORT=5432 \
+  -e DB_NAME=fintech_db \
+  -e DB_USER=fintech_user \
+  -e DB_PASSWORD=fintech_pass123 \
+  contenedor-back
+  
+Corremos el del front
+sudo docker run -dp 80:80 contenedor-front
+
+
+Revisamos la app en la ip pública y ¡ZAZ!
